@@ -8,12 +8,51 @@ window.__ModuleLoader__.load({
 
     const KEY = "dsh.quick-prompts.config.v1";
     const DEFAULT_COLOR = "#4D6BFE";
-    const DEFAULTS = [
+
+    const zh = {
+      section: "快捷指令",
+      gear: "⚙ 配置",
+      gearTitle: "配置快捷指令",
+      sendSuffix: "（点击直接发送）",
+      add: "+ 添加",
+      cancel: "取消",
+      save: "保存",
+      delete: "删除",
+      labelPlaceholder: "名称，如：提交代码",
+      promptPlaceholder: "提示词，点击后填入输入框",
+      colorTitle: "该指令颜色",
+      sendLabel: "点击并发送",
+      sendTitle: "开启后点击该指令会直接把提示词发送出去",
+    };
+    const en = {
+      section: "Quick Prompts",
+      gear: "⚙ Configure",
+      gearTitle: "Configure quick prompts",
+      sendSuffix: " (click to send)",
+      add: "+ Add",
+      cancel: "Cancel",
+      save: "Save",
+      delete: "Delete",
+      labelPlaceholder: "Name, e.g. Commit code",
+      promptPlaceholder: "Prompt, fills the input on click",
+      colorTitle: "Item color",
+      sendLabel: "Send on click",
+      sendTitle: "When on, clicking sends the prompt immediately",
+    };
+
+    const ZH_DEFAULTS = [
       { id: "commit",  label: "提交代码", prompt: "请帮我提交代码：检查当前 git 变更，生成规范的 commit message 并执行提交。", send: false, color: "#4D6BFE" },
       { id: "plan",    label: "给方案",   prompt: "请针对上面的问题给出一个完整方案，包括思路、步骤、注意事项和风险。", send: false, color: "#10A37F" },
       { id: "explain", label: "解释代码", prompt: "请解释这段代码的作用和实现思路。", send: false, color: "#8B5CF6" },
       { id: "test",    label: "写测试",   prompt: "请为下面的代码编写单元测试。", send: false, color: "#F59E0B" },
       { id: "review",  label: "代码审查", prompt: "请对下面的代码进行代码审查，指出问题并给出改进建议。", send: false, color: "#F97316" },
+    ];
+    const EN_DEFAULTS = [
+      { id: "commit",  label: "Commit code", prompt: "Please help me commit the code: review the current git changes, generate a proper commit message, and commit.", send: false, color: "#4D6BFE" },
+      { id: "plan",    label: "Give a plan", prompt: "Please give me a complete plan for the issue above, including approach, steps, caveats, and risks.", send: false, color: "#10A37F" },
+      { id: "explain", label: "Explain code", prompt: "Please explain what this code does and how it works.", send: false, color: "#8B5CF6" },
+      { id: "test",    label: "Write tests", prompt: "Please write unit tests for the code below.", send: false, color: "#F59E0B" },
+      { id: "review",  label: "Code review", prompt: "Please review the code below, point out issues, and suggest improvements.", send: false, color: "#F97316" },
     ];
 
     const css = `
@@ -126,7 +165,7 @@ window.__ModuleLoader__.load({
       }
     }
 
-    let items = loadConfig() || DEFAULTS.map((d) => ({ ...d }));
+    let items = loadConfig();
     const listeners = new Set();
     const store = {
       get: () => items,
@@ -144,6 +183,7 @@ window.__ModuleLoader__.load({
     }
 
     function Editor(props) {
+      const s = props.strings;
       const [rows, setRows] = react.useState(() => props.initial.map((r) => ({ ...r })));
       const update = (id, field, value) => setRows(rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
       const remove = (id) => setRows(rows.filter((r) => r.id !== id));
@@ -153,38 +193,39 @@ window.__ModuleLoader__.load({
       return react.createElement("div", { className: "qp-editor" },
         rows.map((row) => react.createElement("div", { key: row.id, className: "qp-edit-row" },
           react.createElement("input", {
-            type: "color", className: "qp-row-color", value: row.color || DEFAULT_COLOR, title: "该指令颜色",
+            type: "color", className: "qp-row-color", value: row.color || DEFAULT_COLOR, title: s.colorTitle,
             onChange: (e) => update(row.id, "color", e.target.value),
           }),
           react.createElement("input", {
-            className: "qp-edit-label", value: row.label, placeholder: "名称，如：提交代码",
+            className: "qp-edit-label", value: row.label, placeholder: s.labelPlaceholder,
             onChange: (e) => update(row.id, "label", e.target.value),
           }),
           react.createElement("input", {
-            className: "qp-edit-prompt", value: row.prompt, placeholder: "提示词，点击后填入输入框",
+            className: "qp-edit-prompt", value: row.prompt, placeholder: s.promptPlaceholder,
             onChange: (e) => update(row.id, "prompt", e.target.value),
           }),
-          react.createElement("label", { className: "qp-edit-send", title: "开启后点击该指令会直接把提示词发送出去" },
+          react.createElement("label", { className: "qp-edit-send", title: s.sendTitle },
             react.createElement("input", {
               type: "checkbox", checked: !!row.send, style: { accentColor: row.color || DEFAULT_COLOR },
               onChange: (e) => update(row.id, "send", e.target.checked),
             }),
-            "点击并发送",
+            s.sendLabel,
           ),
           react.createElement("button", {
-            className: "qp-edit-del", type: "button", title: "删除", onClick: () => remove(row.id),
+            className: "qp-edit-del", type: "button", title: s.delete, onClick: () => remove(row.id),
           }, "✕"),
         )),
         react.createElement("div", { className: "qp-editor-foot" },
-          react.createElement("button", { className: "qp-btn", type: "button", onClick: add }, "+ 添加"),
+          react.createElement("button", { className: "qp-btn", type: "button", onClick: add }, s.add),
           react.createElement("div", { className: "qp-spacer" }),
-          react.createElement("button", { className: "qp-btn", type: "button", onClick: props.onCancel }, "取消"),
-          react.createElement("button", { className: "qp-btn qp-btn-primary", type: "button", onClick: save }, "保存"),
+          react.createElement("button", { className: "qp-btn", type: "button", onClick: props.onCancel }, s.cancel),
+          react.createElement("button", { className: "qp-btn qp-btn-primary", type: "button", onClick: save }, s.save),
         ),
       );
     }
 
     function QuickPrompts(props) {
+      const s = props.useStrings();
       const items = useItems();
       const [editing, setEditing] = react.useState(false);
       const draft = props.input && typeof props.input.draft === "string" ? props.input.draft : "";
@@ -208,6 +249,7 @@ window.__ModuleLoader__.load({
         editing
           ? react.createElement(Editor, {
               initial: items,
+              strings: s,
               onSave: (next) => { store.replace(next); persist(next); setEditing(false) },
               onCancel: () => setEditing(false),
             })
@@ -217,25 +259,38 @@ window.__ModuleLoader__.load({
                 className: item.send ? "qp-chip qp-chip-send" : "qp-chip",
                 type: "button",
                 style: { "--chip-color": item.color || DEFAULT_COLOR },
-                title: item.send ? item.prompt + "（点击直接发送）" : item.prompt,
+                title: item.send ? item.prompt + s.sendSuffix : item.prompt,
                 onClick: () => insert(item),
               }, item.label)),
               react.createElement("button", {
-                className: "qp-chip qp-chip-gear", type: "button", title: "配置快捷指令",
+                className: "qp-chip qp-chip-gear", type: "button", title: s.gearTitle,
                 onClick: () => setEditing(true),
-              }, "⚙ 配置"),
+              }, s.gear),
             ),
       );
     }
 
     function apply(ctx) {
+      if (items === null) {
+        const isEnglish = ctx.locale.getLocale().active === "en";
+        items = (isEnglish ? EN_DEFAULTS : ZH_DEFAULTS).map((d) => ({ ...d }));
+      }
+      function useStrings() {
+        const [snap, setSnap] = react.useState(() => ctx.locale.getSnapshot());
+        react.useEffect(() => {
+          setSnap(ctx.locale.getSnapshot());
+          return ctx.locale.subscribe(() => setSnap(ctx.locale.getSnapshot()));
+        }, []);
+        return snap && snap.active === "en" ? en : zh;
+      }
       ctx.slots.inject("conversation.input.dock", () => ctx.slots.register({
         name: "conversation.input.dock",
         id: "quick-prompts",
         order: -10,
+        inject: () => ({ useStrings }),
       }, QuickPrompts));
     }
-    const inject = ["slots"];
+    const inject = ["slots", "locale"];
 
     exports.apply = apply;
     exports.inject = inject;

@@ -10,6 +10,7 @@
 - **每条指令独立颜色**：编辑器中每条指令带一个颜色选择器，作用到该胶囊的 hover 边框/文字和「点击并发送」高亮。
 - **持久化**：配置保存在浏览器 `localStorage`（key：`dsh.quick-prompts.config.v1`），插件停止/重启、页面刷新后配置仍保留；`localStorage` 不可用时自动降级为内存态。
 - **配置**：点击「⚙ 配置」进入内联编辑器，可增删改每个指令的名称、提示词、颜色与「点击并发送」开关，保存/取消。
+- **中英双语**：界面文案（按钮、占位符、提示）跟随应用当前语言（中文/English）自动切换；首次使用无配置时，默认指令也会按当前语言生成中文或英文版。
 - **明暗主题自适应**：中性色使用 `--dsw-alias-*` 主题变量，自动适配明暗主题。
 
 ## 安装 / 加载
@@ -66,6 +67,7 @@ deepseek-harness-plugins/
 - **对齐**：`.qp-root` 套用与输入框一致的对齐公式（`--dsh-composer-side-clearance` / `--dsh-composer-card-max-width`）。
 - **每条指令换色**：胶囊内联设置 `--chip-color`，CSS 用 `var(--chip-color, var(--dsw-alias-brand-primary))` 取色。
 - **持久化**：启动时从 `localStorage` 读取（`normalize` 校验字段并回填默认值），保存时写回 `localStorage`，读写均 try/catch 兜底。
+- **双语**：动态版通过 `ctx.get('locale')` 读 `LocaleSnapshot.active` 选文案；正式版通过 `inject: ['slots', 'locale']` + 槽位 `inject` 传入 `useStrings` hook，订阅 locale 变更实时切换。
 - **生命周期**：所有副作用（样式、槽位注册、订阅）都归属当前 Cordis Fiber，停止/更新/删除时自动清理。
 
 ## 默认指令
