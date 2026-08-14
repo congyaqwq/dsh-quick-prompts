@@ -1,0 +1,35 @@
+{
+  "name": "@deepseek-ai/dsh-client-ui-quick-prompts",
+  "description": "Quick-prompts bar above the composer: configurable prompt chips with per-item color, click-to-send, and localStorage persistence.",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "@deepseek-ai/dsh-client-runtime": "*",
+    "@deepseek-ai/dsh-client-ui-conversation": "*"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js"
+  ]
+}

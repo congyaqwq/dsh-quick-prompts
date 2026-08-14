@@ -14,10 +14,24 @@
 
 ## 安装 / 加载
 
-本插件是 **DeepSeek Harness 动态 Cordis 插件**（纯 Client 侧，无构建、零依赖）。加载方式：
+有两种使用方式：**正式持久化安装**（推荐，随 DSH 启动自动加载），或**动态插件**（临时预览、进程内）。
+
+### 方式一：正式安装（持久化）
+
+使用 [`formal/`](./formal/) 目录里的正式客户端插件包，一键安装到 DSH 部署，随启动自动加载。详见 [`formal/INSTALL.md`](./formal/INSTALL.md)：
+
+```bash
+cd quick-prompts/formal
+./install.sh
+# 完成后重启 DSH 并刷新页面
+```
+
+### 方式二：动态插件（临时）
+
+本插件也提供纯 Client 侧、无构建、零依赖的**动态 Cordis 插件**版本：
 
 1. 打开 DeepSeek Harness Web GUI。
-2. 将本仓库的 [`client.js`](./client.js) 内容作为 `code.client` 传入 `cordis_define`，例如：
+2. 将本仓库的 [`client.js`](./client.js) 内容作为 `code.client` 传入 `cordis_define`：
 
    ```text
    cordis_define(plugin: { kind: 'new', idPrefix: 'qprom' }, code: { client: <client.js 的内容> })
@@ -25,17 +39,23 @@
 
 3. 用返回的 `pluginId` / `packageId` 调用 `cordis_run` 激活。
 
-> 说明：`client.js` 就是动态插件的 `code.client` 函数体（`return { apply(ctx) { … } }`），可直接整体复制粘贴使用，不需要 import / 构建。
+> 说明：`client.js` 就是动态插件的 `code.client` 函数体，可直接整体复制粘贴，不需要 import / 构建。
 
 ## 文件结构
 
 ```
 deepseek-harness-plugins/
 └── quick-prompts/
-    ├── client.js    # 客户端插件源码（code.client 函数体）
-    ├── LICENSE      # MIT 协议
-    ├── README.md    # 本文档
-    └── package.json # 元数据（仅用于仓库展示，非 npm 依赖包）
+    ├── client.js      # 动态插件源码（code.client 函数体，开发/预览用）
+    ├── LICENSE        # MIT 协议
+    ├── README.md      # 本文档
+    ├── package.json   # 仓库元数据（仅用于展示，非 npm 依赖包）
+    └── formal/        # 正式可安装包（持久化）
+        ├── package.json   # dsh.client 声明 + exports["./client"]
+        ├── lib/index.js   # node half（空 apply）
+        ├── lib/client.js  # 已构建的浏览器 bundle
+        ├── install.sh     # 一键安装脚本
+        └── INSTALL.md     # 安装/卸载说明
 ```
 
 ## 插件实现要点
@@ -61,7 +81,8 @@ deepseek-harness-plugins/
 ## 已知限制
 
 - 配置保存在**浏览器 localStorage**，仅对当前浏览器有效；清除浏览器数据或换浏览器会丢失（可自行扩展为 Host 侧 `settings` 服务持久化）。
-- 动态插件本身是临时、进程内的，DSH 重启后需要重新 `cordis_define` + `cordis_run`（配置会从 localStorage 自动恢复）。
+- 动态插件版本是临时、进程内的，DSH 重启后需要重新 `cordis_define` + `cordis_run`；正式安装版（`formal/`）不受此限制。
+- 客户端 UI 插件的「正式持久化」需要改部署的 host 组合并重启 DSH，故由 `formal/install.sh` 在部署侧执行，本仓库只提供包与脚本。
 
 ## License
 
