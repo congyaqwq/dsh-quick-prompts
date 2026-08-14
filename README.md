@@ -1,0 +1,67 @@
+# quick-prompts · 常用语快捷指令
+
+悬浮在 DeepSeek Harness 对话框（输入框）上方的常用语快捷指令条：点击即可把预设提示词填入输入框，或直接发送。支持自定义指令与主题色。
+
+## 功能
+
+- 在输入框上方渲染一排「快捷指令」胶囊按钮（默认：提交代码、给方案、解释代码、写测试、代码审查）。
+- **点击填入**：把对应提示词填入输入框（输入框为空则直接填入，否则换行追加）。
+- **点击并发送**（每条指令可单独开启，默认关闭）：开启后点击该胶囊会把提示词直接发送出去，该胶囊会以主题色高亮。
+- **换色**：全局主题色配置，内置预设色板 + 原生取色器，作用到胶囊边框、hover、高亮和「保存」按钮。
+- **配置**：点击「⚙ 配置」进入内联编辑器，可增删改每个指令的名称、提示词与「点击并发送」开关，以及主题色，保存/取消。
+- **明暗主题自适应**：颜色使用 `--dsw-alias-*` 主题变量，自动适配明暗主题。
+- 配置保存在内存中，随动态插件生命周期有效（停止或重启后恢复默认值）。
+
+## 安装 / 加载
+
+本插件是 **DeepSeek Harness 动态 Cordis 插件**（纯 Client 侧，无构建、零依赖）。加载方式：
+
+1. 打开 DeepSeek Harness Web GUI。
+2. 将本仓库的 [`client.js`](./client.js) 内容作为 `code.client` 传入 `cordis_define`，例如：
+
+   ```text
+   cordis_define(plugin: { kind: 'new', idPrefix: 'qprom' }, code: { client: <client.js 的内容> })
+   ```
+
+3. 用返回的 `pluginId` / `packageId` 调用 `cordis_run` 激活。
+
+> 说明：`client.js` 就是动态插件的 `code.client` 函数体（`return { apply(ctx) { … } }`），可直接整体复制粘贴使用，不需要 import / 构建。
+
+## 文件结构
+
+```
+deepseek-harness-plugins/
+└── quick-prompts/
+    ├── client.js    # 客户端插件源码（code.client 函数体）
+    ├── LICENSE      # MIT 协议
+    ├── README.md    # 本文档
+    └── package.json # 元数据（仅用于仓库展示，非 npm 依赖包）
+```
+
+## 插件实现要点
+
+- **挂载槽位**：`conversation.input.dock`（输入框上方的整行区域，list 槽，注册 `id: 'quick-prompts'`）。
+- **写入输入框**：使用槽位 owner props 的 `inputActions.setDraft(text)`；读取当前草稿用 `input.draft`。
+- **直接发送**：使用 `inputActions.submit()`。
+- **对齐**：`.qp-root` 套用与输入框一致的对齐公式（`--dsh-composer-side-clearance` / `--dsh-composer-card-max-width`）。
+- **换色**：通过 CSS 变量 `--qp-accent`（内联设置在 `.qp-root` 上），默认回退到 `--dsw-alias-brand-primary`。
+- **生命周期**：所有副作用（样式、槽位注册、订阅）都归属当前 Cordis Fiber，停止/更新/删除时自动清理。
+
+## 默认指令
+
+| 名称 | 提示词 |
+| --- | --- |
+| 提交代码 | 请帮我提交代码：检查当前 git 变更，生成规范的 commit message 并执行提交。 |
+| 给方案 | 请针对上面的问题给出一个完整方案，包括思路、步骤、注意事项和风险。 |
+| 解释代码 | 请解释这段代码的作用和实现思路。 |
+| 写测试 | 请为下面的代码编写单元测试。 |
+| 代码审查 | 请对下面的代码进行代码审查，指出问题并给出改进建议。 |
+
+## 已知限制
+
+- 配置为**内存态**，停止/重启插件后恢复默认值（动态插件本身是临时、进程内的，不落盘）。
+- 主题色为**全局一个**强调色，不支持每条指令独立颜色。
+
+## License
+
+[MIT](./LICENSE)

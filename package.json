@@ -1,0 +1,19 @@
+{
+  "name": "deepseek-harness-quick-prompts",
+  "version": "1.0.0",
+  "description": "DeepSeek Harness 动态插件：输入框上方的常用语快捷指令条，支持自定义指令、点击并发送、主题换色。",
+  "license": "MIT",
+  "keywords": [
+    "deepseek",
+    "harness",
+    "cordis",
+    "plugin",
+    "quick-prompts",
+    "快捷指令"
+  ],
+  "author": "quick-prompts contributors",
+  "main": "client.js",
+  "files": [
+    "client.js"
+  ]
+}
