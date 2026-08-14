@@ -3,24 +3,69 @@ return {
     const slots = ctx.get('slots')
     if (slots === undefined) return
 
-    // 配置保存在内存中，随本动态插件生命周期有效（停止/重启即重置为默认值）。
+    const KEY = 'dsh.quick-prompts.config.v1'
+    const DEFAULT_COLOR = '#4D6BFE'
+
+    // 默认指令（首次使用，或 localStorage 无有效配置时）。
     const DEFAULTS = [
-      { id: 'commit',  label: '提交代码', prompt: '请帮我提交代码：检查当前 git 变更，生成规范的 commit message 并执行提交。', send: false },
-      { id: 'plan',    label: '给方案',   prompt: '请针对上面的问题给出一个完整方案，包括思路、步骤、注意事项和风险。', send: false },
-      { id: 'explain', label: '解释代码', prompt: '请解释这段代码的作用和实现思路。', send: false },
-      { id: 'test',    label: '写测试',   prompt: '请为下面的代码编写单元测试。', send: false },
-      { id: 'review',  label: '代码审查', prompt: '请对下面的代码进行代码审查，指出问题并给出改进建议。', send: false },
+      { id: 'commit',  label: '提交代码', prompt: '请帮我提交代码：检查当前 git 变更，生成规范的 commit message 并执行提交。', send: false, color: '#4D6BFE' },
+      { id: 'plan',    label: '给方案',   prompt: '请针对上面的问题给出一个完整方案，包括思路、步骤、注意事项和风险。', send: false, color: '#10A37F' },
+      { id: 'explain', label: '解释代码', prompt: '请解释这段代码的作用和实现思路。', send: false, color: '#8B5CF6' },
+      { id: 'test',    label: '写测试',   prompt: '请为下面的代码编写单元测试。', send: false, color: '#F59E0B' },
+      { id: 'review',  label: '代码审查', prompt: '请对下面的代码进行代码审查，指出问题并给出改进建议。', send: false, color: '#F97316' },
     ]
-    const PRESETS = ['#4D6BFE', '#10A37F', '#F59E0B', '#F97316', '#EF4444', '#EC4899', '#8B5CF6', '#64748B']
-    let state = { items: DEFAULTS.map((d) => ({ ...d })), accent: '#4D6BFE' }
-    const listeners = new Set()
-    const store = {
-      get: () => state,
-      subscribe: (fn) => { listeners.add(fn); return () => { listeners.delete(fn) } },
-      set: (partial) => { state = { ...state, ...partial }; for (const fn of listeners) fn() },
-    }
+
     let seq = 0
     const nextId = () => 'p' + (++seq)
+
+    function normalize(raw) {
+      const out = []
+      for (const it of raw) {
+        if (!it || typeof it !== 'object') continue
+        const label = typeof it.label === 'string' ? it.label : ''
+        const prompt = typeof it.prompt === 'string' ? it.prompt : ''
+        if (label.trim() === '' || prompt.trim() === '') continue
+        out.push({
+          id: typeof it.id === 'string' && it.id ? it.id : nextId(),
+          label: label,
+          prompt: prompt,
+          send: !!it.send,
+          color: typeof it.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(it.color) ? it.color : DEFAULT_COLOR,
+        })
+      }
+      return out
+    }
+
+    function loadConfig() {
+      try {
+        if (typeof localStorage === 'undefined') return null
+        const raw = localStorage.getItem(KEY)
+        if (!raw) return null
+        const parsed = JSON.parse(raw)
+        if (!Array.isArray(parsed)) return null
+        const norm = normalize(parsed)
+        return norm.length > 0 ? norm : null
+      } catch (e) {
+        return null
+      }
+    }
+
+    function persist(items) {
+      try {
+        if (typeof localStorage === 'undefined') return
+        localStorage.setItem(KEY, JSON.stringify(items))
+      } catch (e) {
+        // 存储不可用时静默降级为内存态。
+      }
+    }
+
+    let items = loadConfig() || DEFAULTS.map((d) => ({ ...d }))
+    const listeners = new Set()
+    const store = {
+      get: () => items,
+      subscribe: (fn) => { listeners.add(fn); return () => { listeners.delete(fn) } },
+      replace: (next) => { items = next; for (const fn of listeners) fn() },
+    }
 
     styles.insert(`
       .qp-root {
@@ -39,21 +84,16 @@ return {
         color: var(--dsw-alias-label-primary);
         font-size: 12px; line-height: 18px; cursor: pointer; white-space: nowrap;
       }
-      .qp-chip:hover { border-color: var(--qp-accent, var(--dsw-alias-brand-primary)); color: var(--qp-accent, var(--dsw-alias-brand-primary)); }
-      .qp-chip-send { border-color: var(--qp-accent, var(--dsw-alias-brand-primary)); color: var(--qp-accent, var(--dsw-alias-brand-primary)); }
+      .qp-chip:hover { border-color: var(--chip-color, var(--dsw-alias-brand-primary)); color: var(--chip-color, var(--dsw-alias-brand-primary)); }
+      .qp-chip-send { border-color: var(--chip-color, var(--dsw-alias-brand-primary)); color: var(--chip-color, var(--dsw-alias-brand-primary)); }
       .qp-chip-gear { color: var(--dsw-alias-label-secondary); }
       .qp-editor {
         display: flex; flex-direction: column; gap: 6px;
         padding: 8px; border: 1px solid var(--dsw-alias-border-l1);
         border-radius: 8px; background: var(--dsw-alias-bg-layer-1);
       }
-      .qp-edit-accent { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding-bottom: 6px; border-bottom: 1px solid var(--dsw-alias-border-l1); }
-      .qp-edit-accent-label { color: var(--dsw-alias-label-secondary); font-size: 12px; }
-      .qp-swatch { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
-      .qp-swatch:hover { border-color: var(--dsw-alias-label-secondary); }
-      .qp-swatch-active { border-color: var(--dsw-alias-label-primary); }
-      .qp-color-input { width: 28px; height: 24px; padding: 0; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: transparent; cursor: pointer; }
       .qp-edit-row { display: flex; gap: 6px; align-items: center; }
+      .qp-row-color { width: 26px; height: 24px; padding: 0; border: 1px solid var(--dsw-alias-border-l1); border-radius: 6px; background: transparent; cursor: pointer; flex: 0 0 auto; }
       .qp-edit-label { flex: 0 0 140px; }
       .qp-edit-prompt { flex: 1 1 auto; }
       .qp-edit-label, .qp-edit-prompt {
@@ -68,7 +108,7 @@ return {
         color: var(--dsw-alias-label-secondary); font-size: 12px;
         cursor: pointer; white-space: nowrap; user-select: none;
       }
-      .qp-edit-send input { accent-color: var(--qp-accent, var(--dsw-alias-brand-primary)); cursor: pointer; margin: 0; }
+      .qp-edit-send input { cursor: pointer; margin: 0; }
       .qp-edit-del {
         flex: 0 0 auto; width: 24px; height: 24px; border-radius: 6px;
         border: 1px solid var(--dsw-alias-border-l1); background: transparent;
@@ -82,10 +122,10 @@ return {
         border: 1px solid var(--dsw-alias-border-l1); background: transparent;
         color: var(--dsw-alias-label-primary); font-size: 12px; cursor: pointer;
       }
-      .qp-btn-primary { background: var(--qp-accent, var(--dsw-alias-brand-primary)); border-color: var(--qp-accent, var(--dsw-alias-brand-primary)); color: #fff; }
+      .qp-btn-primary { background: var(--dsw-alias-brand-primary); border-color: var(--dsw-alias-brand-primary); color: #fff; }
     `)
 
-    function useStore() {
+    function useItems() {
       const [snapshot, setSnapshot] = React.useState(() => store.get())
       React.useEffect(() => {
         setSnapshot(store.get())
@@ -96,25 +136,17 @@ return {
 
     function Editor(props) {
       const [rows, setRows] = React.useState(() => props.initial.map((r) => ({ ...r })))
-      const [accent, setAccent] = React.useState(props.accent)
       const update = (id, field, value) => setRows(rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)))
       const remove = (id) => setRows(rows.filter((r) => r.id !== id))
-      const add = () => setRows(rows.concat([{ id: nextId(), label: '', prompt: '', send: false }]))
-      const save = () => props.onSave(rows.filter((r) => (r.label || '').trim() !== '' && (r.prompt || '').trim() !== ''), accent)
+      const add = () => setRows(rows.concat([{ id: nextId(), label: '', prompt: '', send: false, color: DEFAULT_COLOR }]))
+      const save = () => props.onSave(rows.filter((r) => (r.label || '').trim() !== '' && (r.prompt || '').trim() !== ''))
 
       return React.createElement('div', { className: 'qp-editor' },
-        React.createElement('div', { className: 'qp-edit-accent' },
-          React.createElement('span', { className: 'qp-edit-accent-label' }, '主题色'),
-          PRESETS.map((c) => React.createElement('button', {
-            key: c, type: 'button', className: accent === c ? 'qp-swatch qp-swatch-active' : 'qp-swatch',
-            style: { background: c }, title: c, onClick: () => setAccent(c),
-          })),
-          React.createElement('input', {
-            type: 'color', className: 'qp-color-input', value: accent,
-            onChange: (e) => setAccent(e.target.value),
-          }),
-        ),
         rows.map((row) => React.createElement('div', { key: row.id, className: 'qp-edit-row' },
+          React.createElement('input', {
+            type: 'color', className: 'qp-row-color', value: row.color || DEFAULT_COLOR, title: '该指令颜色',
+            onChange: (e) => update(row.id, 'color', e.target.value),
+          }),
           React.createElement('input', {
             className: 'qp-edit-label', value: row.label, placeholder: '名称，如：提交代码',
             onChange: (e) => update(row.id, 'label', e.target.value),
@@ -125,7 +157,7 @@ return {
           }),
           React.createElement('label', { className: 'qp-edit-send', title: '开启后点击该指令会直接把提示词发送出去' },
             React.createElement('input', {
-              type: 'checkbox', checked: !!row.send,
+              type: 'checkbox', checked: !!row.send, style: { accentColor: row.color || DEFAULT_COLOR },
               onChange: (e) => update(row.id, 'send', e.target.checked),
             }),
             '点击并发送',
@@ -144,9 +176,7 @@ return {
     }
 
     function QuickPrompts(props) {
-      const state = useStore()
-      const items = state.items
-      const accent = state.accent
+      const items = useItems()
       const [editing, setEditing] = React.useState(false)
       const draft = props.input && typeof props.input.draft === 'string' ? props.input.draft : ''
       const setDraft = props.inputActions && props.inputActions.setDraft
@@ -165,17 +195,19 @@ return {
         }
       }
 
-      return React.createElement('div', { className: 'qp-root', style: { '--qp-accent': accent } },
+      return React.createElement('div', { className: 'qp-root' },
         editing
           ? React.createElement(Editor, {
               initial: items,
-              accent: accent,
-              onSave: (next, nextAccent) => { store.set({ items: next, accent: nextAccent }); setEditing(false) },
+              onSave: (next) => { store.replace(next); persist(next); setEditing(false) },
               onCancel: () => setEditing(false),
             })
           : React.createElement('div', { className: 'qp-row' },
               items.map((item) => React.createElement('button', {
-                key: item.id, className: item.send ? 'qp-chip qp-chip-send' : 'qp-chip', type: 'button',
+                key: item.id,
+                className: item.send ? 'qp-chip qp-chip-send' : 'qp-chip',
+                type: 'button',
+                style: { '--chip-color': item.color || DEFAULT_COLOR },
                 title: item.send ? item.prompt + '（点击直接发送）' : item.prompt,
                 onClick: () => insert(item),
               }, item.label)),
