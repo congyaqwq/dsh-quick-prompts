@@ -1,35 +1,62 @@
 {
-  "name": "@deepseek-ai/dsh-client-ui-quick-prompts",
-  "description": "Quick-prompts bar above the composer: configurable prompt chips with per-item color, click-to-send, and localStorage persistence.",
+  "name": "dsh-quick-prompts",
   "version": "1.0.0",
+  "description": "Quick-prompts bar above the DeepSeek Harness composer: configurable prompt chips with per-item color, click-to-send, zh/en bilingual, and localStorage persistence.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
-    ".": {
-      "default": "./lib/index.js"
-    },
-    "./client": {
-      "default": "./lib/client.js"
-    },
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<owner>/<repo>.git",
+    "directory": "quick-prompts/formal"
+  },
+  "keywords": [
+    "deepseek",
+    "harness",
+    "dsh",
+    "cordis",
+    "plugin",
+    "quick-prompts",
+    "composer",
+    "prompt"
+  ],
+  "author": "quick-prompts contributors",
+  "license": "MIT",
   "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "inject": [
         "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-conversation"
       ]
     }
   },
-  "license": "MIT",
   "peerDependencies": {
     "react": "^18.2.0",
     "@deepseek-ai/dsh-client-runtime": "*",
+    "@deepseek-ai/dsh-client-locale": "*",
     "@deepseek-ai/dsh-client-ui-conversation": "*"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": true },
+    "@deepseek-ai/dsh-client-runtime": { "optional": true },
+    "@deepseek-ai/dsh-client-locale": { "optional": true },
+    "@deepseek-ai/dsh-client-ui-conversation": { "optional": true }
   },
   "files": [
     "lib/index.js",
-    "lib/client.js"
+    "lib/client.js",
+    "cordis.patch.yml"
   ]
 }

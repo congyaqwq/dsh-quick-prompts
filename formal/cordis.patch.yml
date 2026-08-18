@@ -1,0 +1,11 @@
+# dsh-quick-prompts — web composition patch (client UI bundle layer).
+#
+# Installed via `dsh plugin add dsh-quick-prompts`, which auto-registers this
+# bundle into the profile's `dsh.profile.bundles`. This patch inserts ONE
+# client UI row so the web app discovers this package's `dsh.client` half
+# (`lib/client.js`) and bundles it into the shell. Row order carries no load
+# semantics — client UI activation is service-availability driven.
+
+- insert:
+    - id: ui-quick-prompts
+      name: 'dsh-quick-prompts'

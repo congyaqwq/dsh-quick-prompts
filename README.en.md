@@ -23,14 +23,23 @@ A quick-prompts bar floating above the DeepSeek Harness composer (input box): cl
 
 Two ways: **persistent install** (recommended, loads with DSH startup) or **dynamic plugin** (temporary, in-process preview).
 
-### Option 1: Persistent install
+### Option 1: Persistent install (recommended)
 
-Use the formal client package under [`formal/`](./formal/); it installs into a DSH deployment and loads on startup. See [`formal/INSTALL.en.md`](./formal/INSTALL.en.md):
+Use the formal bundle package under [`formal/`](./formal/) (`dsh-quick-prompts`); it loads on DSH startup. See [`formal/INSTALL.en.md`](./formal/INSTALL.en.md).
+
+**From npm:**
+
+```bash
+dsh plugin --profile web add dsh-quick-prompts
+# restart dsh web, then refresh the page
+```
+
+**Local install:**
 
 ```bash
 cd quick-prompts/formal
 ./install.sh
-# restart DSH, then refresh the page
+# restart dsh web, then refresh the page
 ```
 
 ### Option 2: Dynamic plugin (temporary)
@@ -58,11 +67,15 @@ deepseek-harness-plugins/
     ├── README.md      # this doc (中文)
     ├── README.en.md   # English
     ├── package.json   # repo metadata (display only, not an npm dependency)
-    └── formal/        # formal installable package (persistent)
-        ├── package.json   # dsh.client declaration + exports["./client"]
+    └── formal/        # formal installable package (persistent; npm pkg `dsh-quick-prompts`)
+        ├── package.json   # dsh.bundle.patch + dsh.client dual declaration
+        ├── cordis.patch.yml  # inserts the ui-quick-prompts row
         ├── lib/index.js   # node half (empty apply)
         ├── lib/client.js  # prebuilt browser bundle
-        ├── install.sh     # one-shot install script
+        ├── install.sh     # one-shot install script (dsh plugin add)
+        ├── .npmrc         # pins the public npm registry
+        ├── LICENSE        # MIT
+        ├── README.md      # npm package README
         ├── INSTALL.md     # install/uninstall (中文)
         └── INSTALL.en.md  # install/uninstall (English)
 ```
@@ -92,7 +105,7 @@ deepseek-harness-plugins/
 
 - Config lives in browser `localStorage` (per browser); clearing browser data or switching browsers loses it (can be extended to Host-side `settings` persistence).
 - The dynamic version is temporary/in-process and must be re-defined + re-run after a DSH restart; the formal install (`formal/`) has no such limitation.
-- Persistent install of a client-UI plugin requires editing the deployment's host composition and restarting DSH, which `formal/install.sh` performs on the deployment side; this repo only ships the package and script.
+- Persistent install changes the DSH profile's plugin set (`dsh plugin add` auto-registers it into `dsh.profile.bundles`) and takes effect only after restarting `dsh web`.
 
 ## License
 

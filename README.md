@@ -23,14 +23,23 @@
 
 有两种使用方式：**正式持久化安装**（推荐，随 DSH 启动自动加载），或**动态插件**（临时预览、进程内）。
 
-### 方式一：正式安装（持久化）
+### 方式一：正式安装（持久化，推荐）
 
-使用 [`formal/`](./formal/) 目录里的正式客户端插件包，一键安装到 DSH 部署，随启动自动加载。详见 [`formal/INSTALL.md`](./formal/INSTALL.md)：
+使用 [`formal/`](./formal/) 目录里的正式 bundle 包（`dsh-quick-prompts`），随 DSH 启动自动加载。详见 [`formal/INSTALL.md`](./formal/INSTALL.md)。
+
+**从 npm 安装：**
+
+```bash
+dsh plugin --profile web add dsh-quick-prompts
+# 重启 dsh web，刷新页面
+```
+
+**本地安装：**
 
 ```bash
 cd quick-prompts/formal
 ./install.sh
-# 完成后重启 DSH 并刷新页面
+# 重启 dsh web，刷新页面
 ```
 
 ### 方式二：动态插件（临时）
@@ -59,11 +68,15 @@ deepseek-harness-plugins/
     ├── README.en.md   # English
     ├── images/        # 界面截图
     ├── package.json   # 仓库元数据（仅用于展示，非 npm 依赖包）
-    └── formal/        # 正式可安装包（持久化）
-        ├── package.json   # dsh.client 声明 + exports["./client"]
+    └── formal/        # 正式可安装包（持久化，npm 包 dsh-quick-prompts）
+        ├── package.json   # dsh.bundle.patch + dsh.client 双声明
+        ├── cordis.patch.yml  # 插入 ui-quick-prompts 行
         ├── lib/index.js   # node half（空 apply）
         ├── lib/client.js  # 已构建的浏览器 bundle
-        ├── install.sh     # 一键安装脚本
+        ├── install.sh     # 一键安装脚本（dsh plugin add）
+        ├── .npmrc         # 固定公共 npm registry
+        ├── LICENSE        # MIT
+        ├── README.md      # npm 包 README
         ├── INSTALL.md     # 安装/卸载说明（中文）
         └── INSTALL.en.md  # 安装/卸载说明（English）
 ```
@@ -93,7 +106,7 @@ deepseek-harness-plugins/
 
 - 配置保存在**浏览器 localStorage**，仅对当前浏览器有效；清除浏览器数据或换浏览器会丢失（可自行扩展为 Host 侧 `settings` 服务持久化）。
 - 动态插件版本是临时、进程内的，DSH 重启后需要重新 `cordis_define` + `cordis_run`；正式安装版（`formal/`）不受此限制。
-- 客户端 UI 插件的「正式持久化」需要改部署的 host 组合并重启 DSH，故由 `formal/install.sh` 在部署侧执行，本仓库只提供包与脚本。
+- 正式安装会改动 DSH profile 的插件集合（`dsh plugin add` 自动注册进 `dsh.profile.bundles`），需重启 `dsh web` 才生效。
 
 ## License
 

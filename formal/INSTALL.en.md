@@ -1,79 +1,57 @@
 # Installing quick-prompts (formal)
 
-`formal/` is the **formal installable client-plugin package**: it turns quick-prompts from a dynamic plugin into a persistent plugin in your deployment (auto-loads on DSH startup; no per-session `cordis_define` + `cordis_run`).
-
 🌐 [中文](INSTALL.md)
+
+`formal/` is the **formal installable DSH bundle package** (`dsh-quick-prompts`): it declares both `dsh.bundle.patch` (auto-registered into the profile via `dsh plugin add`) and `dsh.client` (the client-UI half bundled into the web app). It loads on DSH startup — no per-session `cordis_define` + `cordis_run`.
 
 ## What it is
 
-- `package.json` — declares `dsh.client: { platform: "web" }` plus `exports["./client"]`.
-- `lib/index.js` — plugin node half (empty `apply`, so the package appears in the host Loader).
-- `lib/client.js` — **prebuilt** browser bundle (`window.__ModuleLoader__.load(...)`, plain JS, no JSX, no tsdown rebuild needed).
+- `package.json` — dual `dsh.bundle.patch` + `dsh.client` declaration, `exports["./client"]`.
+- `cordis.patch.yml` — composition patch inserting the `ui-quick-prompts` row.
+- `lib/index.js` — node half (empty `apply`).
+- `lib/client.js` — **prebuilt** browser bundle (`window.__ModuleLoader__.load(...)`, plain JS, no JSX, no tsdown needed).
 - `install.sh` — one-shot install script.
-
-## Dynamic vs formal
-
-| | Dynamic plugin (`../client.js`) | Formal package (`formal/`) |
-| --- | --- | --- |
-| Lifetime | in-process, lost on restart | persistent across restarts |
-| Loading | `cordis_define` + `cordis_run` | host composition + DSH startup |
-| Code format | `code.client` function body | `window.__ModuleLoader__.load` bundle |
-| Service access | `ctx.get('slots')` | `inject: ['slots', 'locale']` + `ctx.slots` |
-
-Feature parity: chips, click-to-fill/send, per-item color, localStorage persistence, zh/en bilingual.
+- `.npmrc` — pins the public npm registry (for publishing).
 
 ## Install
 
-### 1. Run the install script
+### From npm (recommended)
+
+```bash
+dsh plugin --profile web add dsh-quick-prompts
+# restart dsh web, then refresh the page
+```
+
+`dsh plugin` = pnpm install + auto-registering any `dsh.bundle.patch`-declaring package into `dsh.profile.bundles`. Plugin-set changes take effect on restart.
+
+### Local checkout
 
 ```bash
 cd quick-prompts/formal
-./install.sh
-# or point at your DSH install:
-DSH_ROOT=/path/to/dsh ./install.sh
+./install.sh          # = dsh plugin --profile web add "link:$PWD"
+# restart dsh web, then refresh the page
 ```
 
-The script:
+### Manual
 
-1. copies `package/` into `<DSH install>/node_modules/@deepseek-ai/dsh-client-ui-quick-prompts/`;
-2. idempotently inserts into the host composition `dsh-web-app/cordis.patch.yml`:
-
-   ```yaml
-   # Composer quick-prompts bar: chips above the input, configurable / send-on-click / per-item color.
-   - id: ui-quick-prompts
-     name: '@deepseek-ai/dsh-client-ui-quick-prompts'
-   ```
-
-### 2. Manual install (if the script doesn't fit)
-
-1. Copy the whole `package/` directory to:
-
-   ```
-   <DSH install>/node_modules/@deepseek-ai/dsh-client-ui-quick-prompts/
-   ```
-
-2. Add to the host composition (usually `node_modules/@deepseek-ai/dsh-web-app/cordis.patch.yml`, in the client-ui list right after `ui-goal`):
-
-   ```yaml
-   - id: ui-quick-prompts
-     name: '@deepseek-ai/dsh-client-ui-quick-prompts'
-   ```
-
-### 3. Restart & verify
-
-Restart DSH (web profile), refresh the page. The quick-prompts bar should appear above the composer.
-
-> The default DSH install dir is `~/.npm-global/lib/node_modules/@deepseek-ai/dsh`. Use `DSH_ROOT` if your deployment lives elsewhere (pnpm/npx, etc.).
+```bash
+dsh plugin --profile web add "link:/path/to/quick-prompts/formal"
+```
 
 ## Uninstall
 
-1. Remove the `ui-quick-prompts` row from `cordis.patch.yml`.
-2. Delete `node_modules/@deepseek-ai/dsh-client-ui-quick-prompts/`.
-3. Restart DSH.
+```bash
+dsh plugin --profile web remove dsh-quick-prompts
+# restart dsh web
+```
 
-(Saved config is in browser localStorage; to also clear it, run `localStorage.removeItem('dsh.quick-prompts.config.v1')` in the console.)
+(Saved browser config lives in localStorage; to also clear it, run `localStorage.removeItem('dsh.quick-prompts.config.v1')` in the console.)
+
+## Publishing to npm
+
+See the repo root README's publishing notes; `formal/.npmrc` already pins the registry to public npmjs.
 
 ## Notes
 
-- `lib/client.js` is a hand-written final bundle (not a tsdown artifact), so **no build is required**; if you edit source and want to repackage, regenerate `lib/client.js` with `tsdown` following DSH's `packages/client/ui-*` conventions.
-- The install script edits the deployment's `cordis.patch.yml`; it prints each step before running. If your deployment assembles the host composition differently, use the manual method to add the row to the correct client-ui list.
+- DSH runtime packages (`@deepseek-ai/dsh-client-*`) are declared as **optional peer dependencies**, so pnpm won't pull a second DSH/Cordis copy into the profile (runtime symbol-splitting).
+- After install, check whether `~/.dsh/profiles/web/node_modules/@deepseek-ai` was materialized as a real directory; if so, handle it per DSH's local rules.
