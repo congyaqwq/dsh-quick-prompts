@@ -4,9 +4,9 @@
 
 悬浮在 DeepSeek Harness 对话框（输入框）上方的常用语快捷指令条：点击即可把预设提示词填入输入框，或直接发送。支持自定义指令、每条指令独立颜色，配置持久化保存。
 
-![输入框上方的快捷指令条](images/image.png)
+![输入框上方的快捷指令条](images/screenshot-chips.png)
 
-![快捷指令配置编辑器](images/image-1.png)
+![快捷指令配置编辑器](images/screenshot-editor.png)
 
 ## 功能
 

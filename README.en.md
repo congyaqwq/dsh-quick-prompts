@@ -4,9 +4,9 @@ A quick-prompts bar floating above the DeepSeek Harness composer (input box): cl
 
 🌐 [中文](README.md)
 
-![Quick-prompts chips above the composer](images/image.png)
+![Quick-prompts chips above the composer](images/screenshot-chips.png)
 
-![Quick-prompts editor](images/image-1.png)
+![Quick-prompts editor](images/screenshot-editor.png)
 
 ## Features
 
