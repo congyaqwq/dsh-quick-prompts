@@ -1,5 +1,7 @@
 # 正式安装 quick-prompts
 
+🌐 [English](INSTALL.en.md)
+
 这里的 `formal/` 是**正式可安装的客户端插件包**，它把 quick-prompts 从「动态插件」变成部署里的持久化插件（随 DSH 启动自动加载，无需每次 `cordis_define` + `cordis_run`）。
 
 ## 它是什么
