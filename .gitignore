@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# npm pack 产物
+*.tgz

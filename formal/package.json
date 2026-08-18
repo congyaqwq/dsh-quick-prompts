@@ -14,8 +14,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<owner>/<repo>.git",
-    "directory": "quick-prompts/formal"
+    "url": "git+https://github.com/congyaqwq/dsh-quick-prompts.git",
+    "directory": "formal"
   },
   "keywords": [
     "deepseek",
