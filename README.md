@@ -1,5 +1,7 @@
 # quick-prompts · 常用语快捷指令
 
+[![npm version](https://img.shields.io/npm/v/dsh-quick-prompts?style=flat-square&color=cb0000)](https://www.npmjs.com/package/dsh-quick-prompts) [![npm downloads](https://img.shields.io/npm/dm/dsh-quick-prompts?style=flat-square)](https://www.npmjs.com/package/dsh-quick-prompts)
+
 🌐 [English](README.en.md)
 
 在 DeepSeek Harness 输入框上方显示一排「常用语」胶囊：点击把预设提示词填入输入框，或直接发送。

@@ -1,8 +1,12 @@
 {
   "name": "dsh-quick-prompts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Quick-prompts bar above the DeepSeek Harness composer: configurable prompt chips with per-item color, click-to-send, zh/en bilingual, and localStorage persistence.",
   "type": "module",
+  "homepage": "https://github.com/congyaqwq/dsh-quick-prompts#readme",
+  "bugs": {
+    "url": "https://github.com/congyaqwq/dsh-quick-prompts/issues"
+  },
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",

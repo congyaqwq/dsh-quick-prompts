@@ -1,5 +1,5 @@
 window.__ModuleLoader__.load({
-  id: "@deepseek-ai/dsh-client-ui-quick-prompts",
+  id: "dsh-quick-prompts",
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;
@@ -112,10 +112,10 @@ window.__ModuleLoader__.load({
       }
       .qp-btn-primary { background: var(--dsw-alias-brand-primary); border-color: var(--dsw-alias-brand-primary); color: #fff; }
     `;
-    const tagId = "@deepseek-ai/dsh-client-ui-quick-prompts/styles.css";
+    const tagId = "dsh-quick-prompts/styles.css";
     if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
       const tag = document.createElement("style");
-      tag.dataset.plugin = "@deepseek-ai/dsh-client-ui-quick-prompts";
+      tag.dataset.plugin = "dsh-quick-prompts";
       tag.dataset.pluginCss = tagId;
       tag.textContent = css;
       document.head.appendChild(tag);

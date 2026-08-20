@@ -1,6 +1,10 @@
 # dsh-quick-prompts
 
+[![npm version](https://img.shields.io/npm/v/dsh-quick-prompts?style=flat-square&color=cb0000)](https://www.npmjs.com/package/dsh-quick-prompts) [![npm downloads](https://img.shields.io/npm/dm/dsh-quick-prompts?style=flat-square)](https://www.npmjs.com/package/dsh-quick-prompts)
+
 A quick-prompts bar floating above the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) composer (input box): click a chip to fill a preset prompt into the input, or send it directly. Supports custom prompts, per-item colors, zh/en bilingual, and persisted configuration.
+
+> npm: https://www.npmjs.com/package/dsh-quick-prompts · GitHub: https://github.com/congyaqwq/dsh-quick-prompts
 
 ## Features
 

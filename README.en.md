@@ -1,5 +1,7 @@
 # quick-prompts · Composer quick prompts
 
+[![npm version](https://img.shields.io/npm/v/dsh-quick-prompts?style=flat-square&color=cb0000)](https://www.npmjs.com/package/dsh-quick-prompts) [![npm downloads](https://img.shields.io/npm/dm/dsh-quick-prompts?style=flat-square)](https://www.npmjs.com/package/dsh-quick-prompts)
+
 🌐 [中文](README.md)
 
 A row of quick-prompt chips above the DeepSeek Harness composer: click to fill a preset prompt into the input, or send it directly.
