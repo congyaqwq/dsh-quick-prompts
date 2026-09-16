@@ -3,6 +3,7 @@ return {
     const slots = ctx.get('slots')
     if (slots === undefined) return
     const locale = ctx.get('locale')
+    const sessions = ctx.get('sessions')
 
     const KEY = 'dsh.quick-prompts.config.v1'
     const DEFAULT_COLOR = '#4D6BFE'
@@ -234,23 +235,19 @@ return {
       const [editing, setEditing] = React.useState(false)
       const draft = props.input && typeof props.input.draft === 'string' ? props.input.draft : ''
       const setDraft = props.inputActions && props.inputActions.setDraft
-      const submit = props.inputActions && props.inputActions.submit
 
       const insert = (item) => {
-        if (typeof setDraft !== 'function') return
         const text = (item.prompt || '').trim()
         if (!text) return
-        const existing = draft.trim()
-        if (item.send && existing === '') {
-          // 空草稿才直接发送。setDraft 走异步 Lexical update，同一同步 tick 里
-          // 立即 submit 会读到旧草稿；延迟一个宏任务等草稿落盘后再提交。
-          setDraft(text)
-          if (typeof submit === 'function') setTimeout(() => submit(), 0)
-        } else {
-          // 有草稿（或非 send）：追加而非覆盖，避免清空已有待发送内容。
-          const next = existing === '' ? text : draft.replace(/\s+$/, '') + '\n' + text
-          setDraft(next)
+        if (item.send && typeof props.send === 'function') {
+          // 直接经 conversation.send 发送：不碰草稿、不动队列、无竞态。
+          props.send(text)
+          return
         }
+        if (typeof setDraft !== 'function') return
+        const existing = draft.trim()
+        const next = existing === '' ? text : draft.replace(/\s+$/, '') + '\n' + text
+        setDraft(next)
       }
 
       return React.createElement('div', { className: 'qp-root' },
@@ -278,7 +275,23 @@ return {
     }
 
     slots.inject('conversation.input.dock', () => slots.register(
-      { name: 'conversation.input.dock', id: 'quick-prompts', order: -10, label: () => (locale && locale.getLocale().active === 'en' ? en.section : zh.section) },
+      {
+        name: 'conversation.input.dock',
+        id: 'quick-prompts',
+        order: -10,
+        label: () => (locale && locale.getLocale().active === 'en' ? en.section : zh.section),
+        inject: (sessionId) => {
+          let send
+          try {
+            const actx = sessions && sessions.scope(sessionId)
+            const conversation = actx && actx.get('conversation')
+            if (conversation) send = (text) => { conversation.send(text).catch(() => {}) }
+          } catch (e) {
+            // 会话作用域不可用 → 无直接发送能力，退化为填充草稿。
+          }
+          return { send }
+        },
+      },
       (props) => React.createElement(QuickPrompts, props),
     ))
   },

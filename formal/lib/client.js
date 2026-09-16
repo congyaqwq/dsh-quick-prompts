@@ -230,23 +230,19 @@ window.__ModuleLoader__.load({
       const [editing, setEditing] = react.useState(false);
       const draft = props.input && typeof props.input.draft === "string" ? props.input.draft : "";
       const setDraft = props.inputActions && props.inputActions.setDraft;
-      const submit = props.inputActions && props.inputActions.submit;
 
       const insert = (item) => {
-        if (typeof setDraft !== "function") return;
         const text = (item.prompt || "").trim();
         if (!text) return;
-        const existing = draft.trim();
-        if (item.send && existing === "") {
-          // 空草稿才直接发送。setDraft 走异步 Lexical update，同一同步 tick 里
-          // 立即 submit 会读到旧草稿；延迟一个宏任务等草稿落盘后再提交。
-          setDraft(text);
-          if (typeof submit === "function") setTimeout(() => submit(), 0);
-        } else {
-          // 有草稿（或非 send）：追加而非覆盖，避免清空已有待发送内容。
-          const next = existing === "" ? text : draft.replace(/\s+$/, "") + "\n" + text;
-          setDraft(next);
+        if (item.send && typeof props.send === "function") {
+          // 直接经 conversation.send 发送：不碰草稿、不动队列、无竞态。
+          props.send(text);
+          return;
         }
+        if (typeof setDraft !== "function") return;
+        const existing = draft.trim();
+        const next = existing === "" ? text : draft.replace(/\s+$/, "") + "\n" + text;
+        setDraft(next);
       };
 
       return react.createElement("div", { className: "qp-root" },
@@ -291,10 +287,20 @@ window.__ModuleLoader__.load({
         name: "conversation.input.dock",
         id: "quick-prompts",
         order: -10,
-        inject: () => ({ useStrings }),
+        inject: (sessionId) => {
+          let send;
+          try {
+            const actx = ctx.sessions.scope(sessionId);
+            const conversation = actx && actx.get("conversation");
+            if (conversation) send = (text) => { conversation.send(text).catch(() => {}); };
+          } catch (e) {
+            // 会话作用域不可用 → 无直接发送能力，退化为填充草稿。
+          }
+          return { useStrings, send };
+        },
       }, QuickPrompts));
     }
-    const inject = ["slots", "locale"];
+    const inject = ["slots", "locale", "sessions"];
 
     exports.apply = apply;
     exports.inject = inject;
