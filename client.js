@@ -122,8 +122,8 @@ return {
     styles.insert(`
       .qp-root {
         box-sizing: border-box;
-        width: calc(100% - var(--dsh-composer-side-clearance) - var(--dsh-composer-side-clearance));
-        max-width: var(--dsh-composer-card-max-width);
+        width: calc(100% - var(--dsh-composer-side-clearance) - var(--dsh-composer-side-clearance) - var(--dsh-composer-dock-inset) - var(--dsh-composer-dock-inset) - var(--dsh-composer-dock-inset) - var(--dsh-composer-dock-inset));
+        max-width: calc(var(--dsh-composer-card-max-width) - var(--dsh-composer-dock-inset) - var(--dsh-composer-dock-inset) - var(--dsh-composer-dock-inset) - var(--dsh-composer-dock-inset));
         margin: 0 auto;
         flex: none;
       }
