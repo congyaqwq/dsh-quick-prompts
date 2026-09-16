@@ -236,11 +236,15 @@ window.__ModuleLoader__.load({
         if (typeof setDraft !== "function") return;
         const text = (item.prompt || "").trim();
         if (!text) return;
-        if (item.send) {
+        const existing = draft.trim();
+        if (item.send && existing === "") {
+          // 空草稿才直接发送。setDraft 走异步 Lexical update，同一同步 tick 里
+          // 立即 submit 会读到旧草稿；延迟一个宏任务等草稿落盘后再提交。
           setDraft(text);
-          if (typeof submit === "function") submit();
+          if (typeof submit === "function") setTimeout(() => submit(), 0);
         } else {
-          const next = draft.trim() === "" ? text : draft.replace(/\s+$/, "") + "\n" + text;
+          // 有草稿（或非 send）：追加而非覆盖，避免清空已有待发送内容。
+          const next = existing === "" ? text : draft.replace(/\s+$/, "") + "\n" + text;
           setDraft(next);
         }
       };
