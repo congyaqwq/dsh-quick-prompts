@@ -39,6 +39,7 @@ return {
     }
 
     const ZH_DEFAULTS = [
+      { id: 'continue', label: '继续', prompt: '请继续', send: true, color: '#EC4899' },
       { id: 'commit',  label: '提交代码', prompt: '请帮我提交代码：检查当前 git 变更，生成规范的 commit message 并执行提交。', send: false, color: '#4D6BFE' },
       { id: 'plan',    label: '给方案',   prompt: '请针对上面的问题给出一个完整方案，包括思路、步骤、注意事项和风险。', send: false, color: '#10A37F' },
       { id: 'explain', label: '解释代码', prompt: '请解释这段代码的作用和实现思路。', send: false, color: '#8B5CF6' },
@@ -46,6 +47,7 @@ return {
       { id: 'review',  label: '代码审查', prompt: '请对下面的代码进行代码审查，指出问题并给出改进建议。', send: false, color: '#F97316' },
     ]
     const EN_DEFAULTS = [
+      { id: 'continue', label: 'Continue', prompt: 'Please continue', send: true, color: '#EC4899' },
       { id: 'commit',  label: 'Commit code', prompt: 'Please help me commit the code: review the current git changes, generate a proper commit message, and commit.', send: false, color: '#4D6BFE' },
       { id: 'plan',    label: 'Give a plan', prompt: 'Please give me a complete plan for the issue above, including approach, steps, caveats, and risks.', send: false, color: '#10A37F' },
       { id: 'explain', label: 'Explain code', prompt: 'Please explain what this code does and how it works.', send: false, color: '#8B5CF6' },
